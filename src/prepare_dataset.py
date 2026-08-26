@@ -46,7 +46,9 @@ random.seed(42)
 
 DRYAD_PATH = Path("datasets/raw/Dryad")
 
-IP102_PATH = Path("datasets/raw/IP102/classification")
+IP102_IMAGES_PATH = Path("datasets/raw/IP102/ip102_v1.1/images")
+
+IP102_ANNOTATIONS = Path("datasets/raw/IP102/ip102_v1.1/train.txt")
 
 OUTPUT_PATH = Path("datasets/processed")
 
@@ -87,7 +89,7 @@ print(f"Positive images found: {len(positive_images)}")
 # ----------------------------------------------------
 # Negative classes
 #
-# These are the folders we want to use
+# These are the classes we want to use
 # from IP102.
 # ----------------------------------------------------
 
@@ -106,16 +108,19 @@ NEGATIVE_CLASSES = [
 
 negative_images = []
 
-# Go through every selected class.
-for class_id in NEGATIVE_CLASSES:
+# Read the annotation file and select
+# images that belong to our target classes.
+with open(IP102_ANNOTATIONS, "r") as f:
 
-    # Build the path.
-    class_folder = IP102_PATH / "train" / class_id
+    for line in f:
 
-    # Read every JPG inside it.
-    for image in class_folder.glob("*.jpg"):
+        filename, class_id = line.strip().split()
 
-        negative_images.append(image)
+        if class_id in NEGATIVE_CLASSES:
+
+            image_path = IP102_IMAGES_PATH / filename
+
+            negative_images.append(image_path)
 
 print(f"Negative images found: {len(negative_images)}")
 
