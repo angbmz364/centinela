@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 
+import config
 import dataset
 import model
 
@@ -50,6 +51,8 @@ for epoch in range(NUM_EPOCHS):
     print(f"Average Loss: {average_loss:.4f}")
 
 # Save the trained model
-torch.save(model.model.state_dict(), "models/centinela_stage1.pth")
+config.MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+torch.save(model.model.state_dict(), config.MODEL_PATH / "centinela_stage1.pth")
 
 print("Model saved successfully!")

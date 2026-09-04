@@ -44,13 +44,13 @@ random.seed(42)
 # to a folder on your computer.
 # ----------------------------------------------------
 
-DRYAD_PATH = Path("datasets/raw/Dryad")
+DRYAD_PATH = Path(__file__).parent.parent / "datasets/raw/Dryad"
 
-IP102_IMAGES_PATH = Path("datasets/raw/IP102/ip102_v1.1/images")
+IP102_IMAGES_PATH = Path(__file__).parent.parent / "datasets/raw/IP102/ip102_v1.1/images"
 
-IP102_ANNOTATIONS = Path("datasets/raw/IP102/ip102_v1.1/train.txt")
+IP102_ANNOTATIONS = Path(__file__).parent.parent / "datasets/raw/IP102/ip102_v1.1/train.txt"
 
-OUTPUT_PATH = Path("datasets/processed")
+OUTPUT_PATH = Path(__file__).parent.parent / "datasets/processed"
 
 # ----------------------------------------------------
 # Create the folders if they don't exist.

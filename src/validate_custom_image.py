@@ -14,6 +14,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 
+import config
 import model
 
 # ----------------------------------------------------
@@ -47,7 +48,7 @@ device = torch.device(
 
 model.model.load_state_dict(
     torch.load(
-        "models/centinela_stage1.pth",
+        config.MODEL_PATH / "centinela_stage1.pth",
         map_location=device,
         weights_only=True
     )

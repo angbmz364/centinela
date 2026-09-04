@@ -6,6 +6,7 @@ Evaluates the trained model on the validation dataset.
 
 import torch
 
+import config
 import dataset
 import model
 
@@ -29,7 +30,7 @@ print(f"Using device: {device}")
 
 model.model.load_state_dict(
     torch.load(
-        "models/centinela_stage1.pth",
+        config.MODEL_PATH / "centinela_stage1.pth",
         map_location=device,
         weights_only=True
     )

@@ -1,3 +1,7 @@
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).parent.parent
+
 # Dataset
 
 IMAGE_SIZE = 224
@@ -14,10 +18,10 @@ LEARNING_RATE = 0.001
 
 # Paths
 
-TRAIN_PATH = "datasets/processed/train"
+TRAIN_PATH = PROJECT_ROOT / "datasets/processed/train"
 
-VAL_PATH = "datasets/processed/val"
+VAL_PATH = PROJECT_ROOT / "datasets/processed/val"
 
-TEST_PATH = "datasets/processed/test"
+TEST_PATH = PROJECT_ROOT / "datasets/processed/test"
 
-MODEL_PATH = "models"
+MODEL_PATH = PROJECT_ROOT / "models"
