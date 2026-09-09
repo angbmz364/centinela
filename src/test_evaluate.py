@@ -1,39 +1,31 @@
 """
 test_evaluate.py
 
-Evaluates the trained model on the test dataset and prints
-accuracy, precision, recall, F1-score and the confusion matrix.
+Evalúa el modelo entrenado sobre el conjunto de prueba, imprime
+un informe detallado de métricas en español y lo guarda en
+logs/latest.txt (rotando el archivo anterior con su fecha).
 
-Usage:
+Uso:
     python src/test_evaluate.py
 """
 
 import torch
-from sklearn.metrics import (
-    accuracy_score,
-    precision_recall_fscore_support,
-    confusion_matrix,
-    classification_report,
-)
 
 import config
 import dataset
 import model
 
 from evaluate import evaluate
+from utils import capture_output_to_log, log_detailed_metrics
 
 # ----------------------------------------------------
-# Class order (must match the ImageFolder folder order)
-# ImageFolder sorts classes alphabetically.
+# Orden de las clases (debe coincidir con ImageFolder)
 # ----------------------------------------------------
 
 CLASS_NAMES = dataset.test_dataset.classes
 
-print("Classes:", CLASS_NAMES)
-print("Class to index:", dataset.test_dataset.class_to_idx)
-
 # ----------------------------------------------------
-# Select the device
+# Seleccionar el dispositivo
 # ----------------------------------------------------
 
 device = torch.device(
@@ -42,10 +34,8 @@ device = torch.device(
     else "cpu"
 )
 
-print(f"Using device: {device}")
-
 # ----------------------------------------------------
-# Load the trained weights
+# Cargar los pesos entrenados
 # ----------------------------------------------------
 
 model.model.load_state_dict(
@@ -59,65 +49,34 @@ model.model.load_state_dict(
 model.model.to(device)
 
 # ----------------------------------------------------
-# Evaluate the model on the test set
+# Evaluar el modelo en el conjunto de prueba
 # ----------------------------------------------------
 
-test_loss, test_accuracy, predictions, labels = evaluate(
-    model.model,
-    dataset.test_loader,
-    device
-)
+with capture_output_to_log():
 
-print(f"\nTest Loss: {test_loss:.4f}")
-print(f"Test Accuracy: {test_accuracy:.2f}%")
+    print("=" * 74)
+    print("           EVALUACIÓN DEL MODELO — CONJUNTO DE PRUEBA")
+    print("=" * 74)
 
-# ----------------------------------------------------
-# Precision, Recall, F1-score
-# ----------------------------------------------------
+    print(f"\nUsando dispositivo: {device}")
+    print("Clases:", CLASS_NAMES)
+    print("Índice de clases:", dataset.test_dataset.class_to_idx)
 
-precision, recall, f1, _ = precision_recall_fscore_support(
-    labels,
-    predictions,
-    labels=[0, 1],
-    zero_division=0
-)
+    test_loss, test_accuracy, predictions, labels, probabilities, confidences = evaluate(
+        model.model,
+        dataset.test_loader,
+        device
+    )
 
-for i, name in enumerate(CLASS_NAMES):
-    print(f"\n{name}:")
-    print(f"  Precision: {precision[i] * 100:.2f}%")
-    print(f"  Recall:    {recall[i] * 100:.2f}%")
-    print(f"  F1-score:  {f1[i] * 100:.2f}%")
+    print(f"\nPérdida de prueba (Loss): {test_loss:.4f}")
+    print(f"Exactitud de prueba:      {test_accuracy:.2f}%")
+    print(f"Total de imágenes de prueba: {len(labels)}")
 
-macro_precision, macro_recall, macro_f1, _ = precision_recall_fscore_support(
-    labels,
-    predictions,
-    average="macro",
-    zero_division=0
-)
-
-print("\nMacro:")
-print(f"  Precision: {macro_precision * 100:.2f}%")
-print(f"  Recall:    {macro_recall * 100:.2f}%")
-print(f"  F1-score:  {macro_f1 * 100:.2f}%")
-
-# ----------------------------------------------------
-# Confusion matrix
-# ----------------------------------------------------
-
-print("\nConfusion Matrix (rows=actual, columns=predicted):")
-print(confusion_matrix(labels, predictions))
-
-print("\nClassification Report:")
-print(classification_report(
-    labels,
-    predictions,
-    target_names=CLASS_NAMES,
-    digits=4,
-    zero_division=0
-))
-
-# ----------------------------------------------------
-# Number of test images (used later for the README)
-# ----------------------------------------------------
-
-print(f"\nTotal test images: {len(labels)}")
+    log_detailed_metrics(
+        labels,
+        predictions,
+        probabilities,
+        confidences,
+        CLASS_NAMES,
+        dataset_name="prueba",
+    )

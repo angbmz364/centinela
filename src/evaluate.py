@@ -11,28 +11,36 @@ import torch.nn as nn
 
 def evaluate(model, dataloader, device):
     """
-    Evaluates a trained model.
+    Evalúa un modelo entrenado.
 
-    Parameters
+    Parámetros
     ----------
     model : torch.nn.Module
-        The trained neural network.
+        La red neuronal entrenada.
 
     dataloader : DataLoader
-        Validation or test DataLoader.
+        DataLoader de validación o de prueba.
 
     device : torch.device
-        CPU or GPU.
+        CPU o GPU.
 
-    Returns
+    Retorna
     -------
     average_loss : float
+        Pérdida promedio (Cross-Entropy).
     accuracy : float
+        Exactitud en porcentaje.
     all_predictions : list
+        Clases predichas para cada imagen.
     all_labels : list
+        Etiquetas reales para cada imagen.
+    all_probabilities : list
+        Distribución de probabilidades Softmax (n x num_clases).
+    all_confidences : list
+        Confianza (probabilidad máxima) de cada predicción.
     """
 
-    # Put the model into evaluation mode
+    # Poner el modelo en modo evaluación
     model.eval()
 
     criterion = nn.CrossEntropyLoss()
@@ -43,14 +51,17 @@ def evaluate(model, dataloader, device):
 
     total_images = 0
 
-    # We'll save every prediction.
-    # These will be useful later for the
-    # confusion matrix and precision/recall.
+    # Guardamos cada predicción: son útiles para la matriz
+    # de confusión, precisión/recall, F1 y análisis de confianza.
     all_predictions = []
 
     all_labels = []
 
-    # Disable gradients.
+    all_probabilities = []
+
+    all_confidences = []
+
+    # Desactivar gradientes
     with torch.no_grad():
 
         for images, labels in dataloader:
@@ -64,16 +75,23 @@ def evaluate(model, dataloader, device):
 
             running_loss += loss.item()
 
-            predictions = outputs.argmax(dim=1)
+            # Probabilidad de cada clase y confianza de la predicción
+            probabilities = torch.softmax(outputs, dim=1)
+
+            confidences, predictions = torch.max(probabilities, dim=1)
 
             correct_predictions += (predictions == labels).sum().item()
 
             total_images += labels.size(0)
 
-            # Save predictions
+            # Guardar predicciones
             all_predictions.extend(predictions.cpu().tolist())
 
             all_labels.extend(labels.cpu().tolist())
+
+            all_probabilities.extend(probabilities.cpu().tolist())
+
+            all_confidences.extend(confidences.cpu().tolist())
 
     average_loss = running_loss / len(dataloader)
 
@@ -84,4 +102,6 @@ def evaluate(model, dataloader, device):
         accuracy,
         all_predictions,
         all_labels,
+        all_probabilities,
+        all_confidences,
     )

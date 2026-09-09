@@ -1,7 +1,9 @@
 """
 validate.py
 
-Evaluates the trained model on the validation dataset.
+Evalúa el modelo entrenado sobre el conjunto de validación,
+imprime un informe detallado de métricas en español y lo guarda
+en logs/latest.txt (rotando el archivo anterior con su fecha).
 """
 
 import torch
@@ -11,9 +13,10 @@ import dataset
 import model
 
 from evaluate import evaluate
+from utils import capture_output_to_log, log_detailed_metrics
 
 # ----------------------------------------------------
-# Select the device
+# Seleccionar el dispositivo
 # ----------------------------------------------------
 
 device = torch.device(
@@ -22,10 +25,8 @@ device = torch.device(
     else "cpu"
 )
 
-print(f"Using device: {device}")
-
 # ----------------------------------------------------
-# Load the trained weights
+# Cargar los pesos entrenados
 # ----------------------------------------------------
 
 model.model.load_state_dict(
@@ -39,14 +40,32 @@ model.model.load_state_dict(
 model.model.to(device)
 
 # ----------------------------------------------------
-# Evaluate the model
+# Evaluar el modelo y guardar el informe
 # ----------------------------------------------------
 
-validation_loss, validation_accuracy, predictions, labels = evaluate(
-    model.model,
-    dataset.val_loader,
-    device
-)
+with capture_output_to_log():
 
-print(f"\nValidation Loss: {validation_loss:.4f}")
-print(f"Validation Accuracy: {validation_accuracy:.2f}%")
+    print("=" * 74)
+    print("          VALIDACIÓN DEL MODELO — CONJUNTO DE VALIDACIÓN")
+    print("=" * 74)
+
+    print(f"\nUsando dispositivo: {device}")
+    print(f"Clases: {dataset.val_dataset.classes}")
+
+    validation_loss, validation_accuracy, predictions, labels, probabilities, confidences = evaluate(
+        model.model,
+        dataset.val_loader,
+        device
+    )
+
+    print(f"\nPérdida de validación (Loss): {validation_loss:.4f}")
+    print(f"Exactitud de validación:      {validation_accuracy:.2f}%")
+
+    log_detailed_metrics(
+        labels,
+        predictions,
+        probabilities,
+        confidences,
+        dataset.val_dataset.classes,
+        dataset_name="validación",
+    )
